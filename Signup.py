@@ -1,76 +1,183 @@
-from tkinter import*
-from PIL import Image,ImageTk
-from tkinter import ttk,messagebox
+from tkinter import *
+from PIL import Image, ImageTk
+from tkinter import messagebox
 import pymysql
+import hashlib
+
+
 
 class signup:
-    def __init__(self,root):
-        self.root=root
+    def __init__(self, root):
+        self.root = root
         self.root.title("Signup")
         self.root.geometry("1366x768+0+0")
+        self.root.resizable(False, False)
 
-        #==Bg Image==
-        self.bg=ImageTk.PhotoImage(file="Images/PMS-01.jpg")
-        bg=Label(self.root,image=self.bg).place(x=0,y=0,relwidth=1,relheight=1)
+        self.show_password = False  
+        self.show_confirm_password = False   
 
-        #==Signup Frame==
-        title=Label(self.root,text="Signup...",font=("Calibri",20,"bold"),bg="white").place(x=650,y=300)
+        # == Bg Image ==
+        self.bg = ImageTk.PhotoImage(file="Images/PMS-01.jpg")
+        bg = Label(self.root, image=self.bg)
+        bg.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.Email=Label(self.root,text="Email",font=("Calibri",16,"bold"),bg="white").place(x=500,y=350)
-        self.txt_Email=Entry(self.root,font=("Calibri",15),bg="white",bd="1",relief="solid")
-        self.txt_Email.place(x=500,y=380,width=380,height=40)
+        # == Signup Frame ==
+        title = Label(self.root, text="Signup...", font=("Calibri", 20, "bold"), bg="white")
+        title.place(x=650, y=300)
 
-        Password=Label(self.root,text="Password",font=("Calibri",16,"bold"),bg="white").place(x=500,y=430)
-        self.txt_Password=Entry(self.root,font=("Calibri",15),bg="white",bd="1",relief="solid")
-        self.txt_Password.place(x=500,y=460,width=380,height=40)
+        self.Email = Label(self.root, text="Email", font=("Calibri", 16, "bold"), bg="white")
+        self.Email.place(x=500, y=350)
 
-        Confirm_Password=Label(self.root,text="Confirm Password",font=("Calibri",16,"bold"),bg="white").place(x=500,y=510)
-        self.txt_Confirm_Password=Entry(self.root,font=("Calibri",15),bg="white",bd="1",relief="solid")
-        self.txt_Confirm_Password.place(x=500,y=540,width=380,height=40)
+        self.txt_Email = Entry(self.root, font=("Calibri", 15), bg="white", bd=1, relief="solid")
+        self.txt_Email.place(x=500, y=380, width=380, height=40)
 
-        btn_signup = Button(self.root,text="Signup",font=("Calibri", 16, "bold"),bg="#000000",fg="white",command=self.register_data)            
+        Password = Label(self.root, text="Password", font=("Calibri", 16, "bold"), bg="white")
+        Password.place(x=500, y=430)
+
+        self.txt_Password = Entry(
+            self.root,
+            font=("Calibri", 15),
+            bg="white",
+            bd=1,
+            relief="solid",
+            show="*"  
+        )
+        self.txt_Password.place(x=500, y=460, width=380, height=40)
+
+        btn_eye_password = Button(
+            self.root,
+            text="👁",
+            font=("Calibri", 12),
+            bg="white",
+            bd=0,
+            command=self.toggle_password
+        )
+        btn_eye_password.place(x=840, y=463, width=36, height=36)
+
+        Confirm_Password = Label(self.root, text="Confirm Password", font=("Calibri", 16, "bold"), bg="white")
+        Confirm_Password.place(x=500, y=510)
+
+        self.txt_Confirm_Password = Entry(
+            self.root,
+            font=("Calibri", 15),
+            bg="white",
+            bd=1,
+            relief="solid",
+            show="*"  
+        )
+        self.txt_Confirm_Password.place(x=500, y=540, width=380, height=40)
+
+        btn_eye_confirm = Button(
+            self.root,
+            text="👁",
+            font=("Calibri", 12),
+            bg="white",
+            bd=0,
+            command=self.toggle_confirm_password
+        )
+        btn_eye_confirm.place(x=840, y=543, width=36, height=36)
+
+        btn_signup = Button(
+            self.root,
+            text="Signup",
+            font=("Calibri", 16, "bold"),
+            bg="#000000",
+            fg="white",
+            command=self.register_data
+        )
         btn_signup.place(x=500, y=600, width=380, height=45)
 
-        Login=Label(self.root,text="Already have an account?",font=("Calibri",12),bg="white").place(x=575,y=650)
-        btn_login = Button(self.root,text="Login",font=("Calibri", 12, "bold"),bg="White",bd=0,fg="Black")            
+        Login = Label(self.root, text="Already have an account?", font=("Calibri", 12), bg="white")
+        Login.place(x=575, y=650)
+
+        btn_login = Button(
+            self.root,
+            text="Login",
+            font=("Calibri", 12, "bold"),
+            bg="White",
+            bd=0,
+            fg="Black",
+            command=self.open_login  
+        )
         btn_login.place(x=745, y=652, width=40, height=20)
 
-
     def clear(self):
-        self.txt_Email.delete(0,END)
-        self.txt_Password.delete(0,END)
-        self.txt_Confirm_Password.delete(0,END)
+        self.txt_Email.delete(0, END)
+        self.txt_Password.delete(0, END)
+        self.txt_Confirm_Password.delete(0, END)
+
+    def toggle_password(self):   
+        if self.show_password:
+            self.txt_Password.config(show="*")
+            self.show_password = False
+        else:
+            self.txt_Password.config(show="")
+            self.show_password = True
+
+    def toggle_confirm_password(self):  
+        if self.show_confirm_password:
+            self.txt_Confirm_Password.config(show="*")
+            self.show_confirm_password = False
+        else:
+            self.txt_Confirm_Password.config(show="")
+            self.show_confirm_password = True
+
+    def hash_password(self, password):  
+        return hashlib.sha256(password.encode()).hexdigest()
 
     def register_data(self):
-        if self.txt_Email.get()=="" or self.txt_Password.get()=="" or self.txt_Confirm_Password.get()=="":
-            messagebox.showerror("Error","All Fields Are Required",parent=self.root)
-        elif self.txt_Password.get()!= self.txt_Confirm_Password.get():
-            messagebox.showerror("Error","Password & Confirm Password should be same",parent=self.root)
+        if self.txt_Email.get() == "" or self.txt_Password.get() == "" or self.txt_Confirm_Password.get() == "":
+            messagebox.showerror("Error", "All Fields Are Required", parent=self.root)
+
+        elif self.txt_Password.get() != self.txt_Confirm_Password.get():
+            messagebox.showerror("Error", "Password & Confirm Password should be same", parent=self.root)
+
         else:
             try:
-                con=pymysql.connect(host="localhost",user="root",password="",database="NafasDatabase")
-                cur=con.cursor()
-                cur.execute("select*from user where email=%s",self.txt_Email.get())
-                row=cur.fetchone()
-                # print(row)
-                if row!=None:
-                    messagebox.showinfo("Error","User Already Exist,Please try with another email",parent=self.root)  
-                else:                
-                    cur.execute("insert into user (email,password)values(%s,%s)",
-                            (self.txt_Email.get(),
-                             self.txt_Password.get()        
-                            ))
+                con = pymysql.connect(
+                    host="localhost",
+                    user="root",
+                    password="",
+                    database="NafasDatabase"
+                )
+                cur = con.cursor()
+
+                cur.execute(
+                    "select * from user where email=%s",
+                    (self.txt_Email.get(),)   
+                )
+                row = cur.fetchone()
+
+                if row is not None:
+                    messagebox.showinfo("Error", "User Already Exist, Please try with another email", parent=self.root)
+                else:
+                    hashed_password = self.hash_password(self.txt_Password.get())  
+
+                    cur.execute(
+                        "insert into user (email, password) values (%s, %s)",
+                        (
+                            self.txt_Email.get(),
+                            hashed_password   
+                        )
+                    )
+
                     con.commit()
                     con.close()
-                    messagebox.showinfo("Success","Register Successful",parent=self.root)
+                    messagebox.showinfo("Success", "Register Successful", parent=self.root)
                     self.clear()
+
             except Exception as es:
-                messagebox.showerror("Error",f"error due to:{str(es)}",parent=self.root)
-               
-            # messagebox.showinfo("Success","Register Successful",parent=self.root)
+                messagebox.showerror("Error", f"Error due to: {str(es)}", parent=self.root)
+
+    def open_login(self):   
+        self.root.destroy()
+        from Login import login   
+        root = Tk()
+        obj = login(root)
+        root.mainloop()
 
 
-root=Tk()
-obj=signup(root)
-root.mainloop()
-
+if __name__ == "__main__":  
+    root = Tk()
+    obj = signup(root)
+    root.mainloop()
