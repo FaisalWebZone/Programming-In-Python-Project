@@ -15,6 +15,10 @@ class addperfume:
         for widget in self.root.winfo_children():
             widget.destroy()
 
+        # == Search Variable ==
+        self.search_by = StringVar()
+        self.search_txt = StringVar()
+
         # -------- BACKGROUND IMAGE --------
         self.bg = ImageTk.PhotoImage(file="Images/PMS-02.jpg")
         bg = Label(self.root, image=self.bg)
@@ -75,9 +79,8 @@ class addperfume:
         Label(form_frame, text="Brand", bg="white").grid(row=3, column=0, pady=5)
         Entry(form_frame, textvariable=self.brand_var).grid(row=3, column=1)
 
-        
-        Label(form_frame, text="Quantity", bg="white").grid(row=5, column=0, pady=5)
-        Entry(form_frame, textvariable=self.quantity_var).grid(row=5, column=1)
+        Label(form_frame, text="Quantity", bg="white").grid(row=4, column=0, pady=5)
+        Entry(form_frame, textvariable=self.quantity_var).grid(row=4, column=1)
 
         # -------- BUTTONS --------
         Button(form_frame, text="Add", bg="green", fg="white",
@@ -92,9 +95,50 @@ class addperfume:
         Button(form_frame, text="Clear",
                command=self.clear_fields).grid(row=7, column=1)
 
+        # -------- SEARCH FRAME --------
+        search_frame = Frame(main_frame, bg="white")
+        search_frame.place(x=350, y=0, width=700, height=50)
+
+        Label(search_frame, text="Search By", bg="white",
+              font=("Calibri", 12, "bold")).grid(row=0, column=0, padx=5)
+
+        combo_search = ttk.Combobox(
+            search_frame,
+            textvariable=self.search_by,
+            state="readonly",
+            width=10,
+            font=("Calibri", 12)
+        )
+        combo_search["values"] = ("name", "brand")
+        combo_search.grid(row=0, column=1, padx=5)
+        combo_search.current(0)
+
+        Entry(
+            search_frame,
+            textvariable=self.search_txt,
+            width=25,
+            font=("Calibri", 12)
+        ).grid(row=0, column=2, padx=5)
+
+        Button(
+            search_frame,
+            text="Search",
+            bg="orange",
+            fg="black",
+            font=("Calibri", 12, "bold"),
+            command=self.search_data
+        ).grid(row=0, column=3, padx=5)
+
+        Button(
+            search_frame,
+            text="Show All",
+            font=("Calibri", 12, "bold"),
+            command=self.fetch_data
+        ).grid(row=0, column=4, padx=5)
+
         # -------- TABLE FRAME --------
         table_frame = Frame(main_frame)
-        table_frame.place(x=350, y=20, width=700, height=380)
+        table_frame.place(x=350, y=60, width=700, height=340)
 
         scroll_x = Scrollbar(table_frame, orient=HORIZONTAL)
         scroll_y = Scrollbar(table_frame, orient=VERTICAL)
@@ -116,7 +160,6 @@ class addperfume:
         self.perfume_table.heading("name", text="Name")
         self.perfume_table.heading("price", text="Price")
         self.perfume_table.heading("brand", text="Brand")
-        
         self.perfume_table.heading("quantity", text="Quantity")
 
         self.perfume_table["show"] = "headings"
@@ -143,13 +186,35 @@ class addperfume:
     def fetch_data(self):
         con = self.connect_db()
         cur = con.cursor()
-        cur.execute("SELECT * FROM perfume")
+        cur.execute("SELECT id,name, price, brand, quantity FROM perfume")
         rows = cur.fetchall()
         con.close()
 
         self.perfume_table.delete(*self.perfume_table.get_children())
         for row in rows:
             self.perfume_table.insert("", END, values=row)
+
+    def search_data(self):
+        if self.search_by.get() == "" or self.search_txt.get() == "":
+            messagebox.showerror("Error", "Please select search type and enter keyword")
+            return
+
+        con = self.connect_db()
+        cur = con.cursor()
+
+        query = f"SELECT * FROM perfume WHERE {self.search_by.get()} LIKE %s"
+        cur.execute(query, ('%' + self.search_txt.get() + '%',))
+
+        rows = cur.fetchall()
+        con.close()
+
+        self.perfume_table.delete(*self.perfume_table.get_children())
+
+        if len(rows) == 0:
+            messagebox.showinfo("No Result", "No record found")
+        else:
+            for row in rows:
+                self.perfume_table.insert("", END, values=row)
 
     def add_data(self):
         if self.name_var.get() == "" or self.price_var.get() == "":
@@ -164,9 +229,9 @@ class addperfume:
             VALUES (%s,%s,%s,%s)
         """, (
             self.name_var.get(),
+            self.price_var.get(),
             self.brand_var.get(),
-            self.quantity_var.get(),
-            self.price_var.get()
+            self.quantity_var.get()
         ))
 
         con.commit()
@@ -187,12 +252,11 @@ class addperfume:
         cur.execute("""
             UPDATE perfume 
             SET name=%s, price=%s, brand=%s, quantity=%s 
-            WHERE perfume_id=%s
+            WHERE id=%s
         """, (
             self.name_var.get(),
             self.price_var.get(),
             self.brand_var.get(),
-            
             self.quantity_var.get(),
             self.id_var.get()
         ))
@@ -212,7 +276,7 @@ class addperfume:
         con = self.connect_db()
         cur = con.cursor()
 
-        cur.execute("DELETE FROM perfume WHERE id=%s", (self.id_var.get(),))
+        cur.execute("DELETE FROM perfume WHERE perfume_id=%s", (self.id_var.get(),))
 
         con.commit()
         con.close()
@@ -226,8 +290,8 @@ class addperfume:
         self.name_var.set("")
         self.price_var.set("")
         self.brand_var.set("")
-        
         self.quantity_var.set("")
+        self.search_txt.set("")
 
     def get_cursor(self, event):
         row = self.perfume_table.focus()
@@ -239,8 +303,7 @@ class addperfume:
             self.name_var.set(data[1])
             self.price_var.set(data[2])
             self.brand_var.set(data[3])
-            
-            self.quantity_var.set(data[5])
+            self.quantity_var.set(data[4])
 
 
 # -------- MAIN --------

@@ -13,7 +13,7 @@ class home:
 
         self.root.config(bg="white")
         self.root.title("Perfume Management System")
-        self.root.geometry("1200x700+0+0")
+        self.root.geometry("1366x768+0+0")
 
         # == Bg Image ==
         self.bg = ImageTk.PhotoImage(file="Images/PMS-02.jpg")
@@ -33,26 +33,30 @@ class home:
         btn_logo.place(x=20, y=20, width=120, height=60)
 
         # == Add Perfume Button ==
+        self.allperfume_img=ImageTk.PhotoImage(file="Images/Allperfumes.jpg")
         btn_add_perfume = Button(
             self.root,
-            text="Add Perfume",
+            #text="Add Perfume",
+            image=self.allperfume_img,
             font=("Calibri", 16, "bold"),
             bg="white",
             fg="black",
             command=self.add_perfume
         )
-        btn_add_perfume.place(x=880, y=20, width=150, height=50)
+        btn_add_perfume.place(x=250, y=200,width=200,height=240)
 
         # == Invoice Button ==
+        self.invoice_img=ImageTk.PhotoImage(file="Images/Invoice.jpg")
         btn_invoice = Button(
             self.root,
-            text="Invoice",
+            #text="Invoice",
+            image=self.invoice_img,
             font=("Calibri", 16, "bold"),
             bg="white",
             fg="black",
             command=self.invoice
         )
-        btn_invoice.place(x=1045, y=20, width=100, height=50)
+        btn_invoice.place(x=500, y=200, width=200, height=240)
 
         # == Logout Button ==
         btn_logout = Button(

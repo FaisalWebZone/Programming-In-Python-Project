@@ -4,20 +4,20 @@ import pymysql
 
 
 class invoice:
-    def __init__(self, root, current_user_email):   # <<< CHANGED
+    def __init__(self, root, current_user_email):  
         self.root = root
         self.root.title("Invoice")
         self.root.geometry("1366x768+0+0")
 
-        self.current_user_email = current_user_email   # <<< CHANGED
+        self.current_user_email = current_user_email   
 
-        for widget in self.root.winfo_children():   # <<< CHANGED
+        for widget in self.root.winfo_children():   
             widget.destroy()
 
         title = Label(self.root, text="Invoice...", font=("Calibri", 20, "bold"), bg="white")
         title.place(x=650, y=100)
 
-        session_user = Label(   # <<< CHANGED
+        session_user = Label(   
             self.root,
             text=f"Login User: {self.current_user_email}",
             font=("Calibri", 12, "bold"),
@@ -83,12 +83,12 @@ class invoice:
                 cur = con.cursor()
 
                 cur.execute(
-                    "insert into invoice (perfume,price,customer_name,email) values(%s,%s,%s,%s)",   # <<< CHANGED
+                    "insert into invoice (perfume,price,customer_name,email) values(%s,%s,%s,%s)",   
                     (
                         self.txt_Perfume.get(),
                         self.txt_Price.get(),
                         self.txt_Customer_Name.get(),
-                        self.current_user_email   # <<< CHANGED
+                        self.current_user_email   
                     )
                 )
 
@@ -101,6 +101,6 @@ class invoice:
             except Exception as es:
                 messagebox.showerror("Error", f"Error due to : {str(es)}", parent=self.root)
 
-    def go_home(self):   # <<< CHANGED
+    def go_home(self):  
         from Home import home
         home(self.root, self.current_user_email)

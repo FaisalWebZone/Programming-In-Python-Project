@@ -97,18 +97,18 @@ class login:
             hashed_password = self.hash_password(self.txt_Password.get())
 
             cur.execute(
-                "SELECT email FROM `user` WHERE email=%s AND password=%s",   # <<< CHANGED
+                "SELECT email FROM `user` WHERE email=%s AND password=%s",   
                 (self.txt_Email.get().strip(), hashed_password)
             )
             row = cur.fetchone()
 
             if row is not None:
-                current_user_email = row[0]   # <<< CHANGED
+                current_user_email = row[0]   
 
                 messagebox.showinfo("Success", "Login Successful", parent=self.root)
 
-                from Home import home   # <<< CHANGED
-                home(self.root, current_user_email)   # <<< CHANGED
+                from Home import home  
+                home(self.root, current_user_email)   
 
             else:
                 messagebox.showerror("Error", "Invalid Email or Password", parent=self.root)
