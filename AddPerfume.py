@@ -184,106 +184,136 @@ class addperfume:
         )
 
     def fetch_data(self):
-        con = self.connect_db()
-        cur = con.cursor()
-        cur.execute("SELECT id,name, price, brand, quantity FROM perfume")
-        rows = cur.fetchall()
-        con.close()
+        try:
+            con = self.connect_db()
+            cur = con.cursor()
+            cur.execute("SELECT id, name, price, brand, quantity FROM perfume")
+            rows = cur.fetchall()
+            con.close()
 
-        self.perfume_table.delete(*self.perfume_table.get_children())
-        for row in rows:
-            self.perfume_table.insert("", END, values=row)
-
-    def search_data(self):
-        if self.search_by.get() == "" or self.search_txt.get() == "":
-            messagebox.showerror("Error", "Please select search type and enter keyword")
-            return
-
-        con = self.connect_db()
-        cur = con.cursor()
-
-        query = f"SELECT * FROM perfume WHERE {self.search_by.get()} LIKE %s"
-        cur.execute(query, ('%' + self.search_txt.get() + '%',))
-
-        rows = cur.fetchall()
-        con.close()
-
-        self.perfume_table.delete(*self.perfume_table.get_children())
-
-        if len(rows) == 0:
-            messagebox.showinfo("No Result", "No record found")
-        else:
+            self.perfume_table.delete(*self.perfume_table.get_children())
             for row in rows:
                 self.perfume_table.insert("", END, values=row)
 
-    def add_data(self):
-        if self.name_var.get() == "" or self.price_var.get() == "":
-            messagebox.showerror("Error", "Name and Price required")
+        except Exception as es:
+            messagebox.showerror("Error", f"Error due to: {str(es)}", parent=self.root)
+
+    def search_data(self):
+        if self.search_by.get() == "" or self.search_txt.get() == "":
+            messagebox.showerror("Error", "Please select search type and enter keyword", parent=self.root)
             return
 
-        con = self.connect_db()
-        cur = con.cursor()
+        try:
+            con = self.connect_db()
+            cur = con.cursor()
 
-        cur.execute("""
-            INSERT INTO perfume (name, price, brand, quantity)
-            VALUES (%s,%s,%s,%s)
-        """, (
-            self.name_var.get(),
-            self.price_var.get(),
-            self.brand_var.get(),
-            self.quantity_var.get()
-        ))
+            query = f"SELECT id, name, price, brand, quantity FROM perfume WHERE {self.search_by.get()} LIKE %s"
+            cur.execute(query, ('%' + self.search_txt.get().strip() + '%',))
 
-        con.commit()
-        con.close()
+            rows = cur.fetchall()
+            con.close()
 
-        self.fetch_data()
-        self.clear_fields()
-        messagebox.showinfo("Success", "Data Added")
+            self.perfume_table.delete(*self.perfume_table.get_children())
+
+            if len(rows) == 0:
+                messagebox.showinfo("No Result", "No record found", parent=self.root)
+            else:
+                for row in rows:
+                    self.perfume_table.insert("", END, values=row)
+
+        except Exception as es:
+            messagebox.showerror("Error", f"Error due to: {str(es)}", parent=self.root)
+
+    def add_data(self):
+        if self.name_var.get() == "" or self.price_var.get() == "":
+            messagebox.showerror("Error", "Name and Price required", parent=self.root)
+            return
+
+        try:
+            price = float(self.price_var.get())
+            quantity = int(self.quantity_var.get() or 0)
+
+            con = self.connect_db()
+            cur = con.cursor()
+
+            cur.execute("""
+                INSERT INTO perfume (name, price, brand, quantity)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                self.name_var.get().strip(),
+                price,
+                self.brand_var.get().strip(),
+                quantity
+            ))
+
+            con.commit()
+            con.close()
+
+            self.fetch_data()
+            self.clear_fields()
+            messagebox.showinfo("Success", "Data Added", parent=self.root)
+
+        except ValueError:
+            messagebox.showerror("Error", "Price must be number and Quantity must be integer", parent=self.root)
+        except Exception as es:
+            messagebox.showerror("Error", f"Error due to: {str(es)}", parent=self.root)
 
     def update_data(self):
         if self.id_var.get() == "":
-            messagebox.showerror("Error", "Select data first")
+            messagebox.showerror("Error", "Select data first", parent=self.root)
             return
 
-        con = self.connect_db()
-        cur = con.cursor()
+        try:
+            price = float(self.price_var.get())
+            quantity = int(self.quantity_var.get() or 0)
 
-        cur.execute("""
-            UPDATE perfume 
-            SET name=%s, price=%s, brand=%s, quantity=%s 
-            WHERE id=%s
-        """, (
-            self.name_var.get(),
-            self.price_var.get(),
-            self.brand_var.get(),
-            self.quantity_var.get(),
-            self.id_var.get()
-        ))
+            con = self.connect_db()
+            cur = con.cursor()
 
-        con.commit()
-        con.close()
+            cur.execute("""
+                UPDATE perfume
+                SET name=%s, price=%s, brand=%s, quantity=%s
+                WHERE id=%s
+            """, (
+                self.name_var.get().strip(),
+                price,
+                self.brand_var.get().strip(),
+                quantity,
+                self.id_var.get()
+            ))
 
-        self.fetch_data()
-        self.clear_fields()
-        messagebox.showinfo("Success", "Data Updated")
+            con.commit()
+            con.close()
+
+            self.fetch_data()
+            self.clear_fields()
+            messagebox.showinfo("Success", "Data Updated", parent=self.root)
+
+        except ValueError:
+            messagebox.showerror("Error", "Price must be number and Quantity must be integer", parent=self.root)
+        except Exception as es:
+            messagebox.showerror("Error", f"Error due to: {str(es)}", parent=self.root)
 
     def delete_data(self):
         if self.id_var.get() == "":
-            messagebox.showerror("Error", "Select data first")
+            messagebox.showerror("Error", "Select data first", parent=self.root)
             return
 
-        con = self.connect_db()
-        cur = con.cursor()
+        try:
+            con = self.connect_db()
+            cur = con.cursor()
 
-        cur.execute("DELETE FROM perfume WHERE perfume_id=%s", (self.id_var.get(),))
+            cur.execute("DELETE FROM perfume WHERE id=%s", (self.id_var.get(),))
 
-        con.commit()
-        con.close()
+            con.commit()
+            con.close()
 
-        self.fetch_data()
-        self.clear_fields()
-        messagebox.showinfo("Success", "Data Deleted")
+            self.fetch_data()
+            self.clear_fields()
+            messagebox.showinfo("Success", "Data Deleted", parent=self.root)
+
+        except Exception as es:
+            messagebox.showerror("Error", f"Error due to: {str(es)}", parent=self.root)
 
     def clear_fields(self):
         self.id_var.set("")
@@ -306,8 +336,7 @@ class addperfume:
             self.quantity_var.set(data[4])
 
 
-# -------- MAIN --------
 if __name__ == "__main__":
     root = Tk()
-    obj = addperfume(root)
+    obj = addperfume(root, "demo@example.com")
     root.mainloop()
